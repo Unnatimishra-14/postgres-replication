@@ -1,0 +1,38 @@
+scope: postgres
+namespace: /db/
+name: postgres-primary
+
+restapi:
+  listen: 0.0.0.0:8008
+  connect_address: 0.0.0.0:8008
+
+etcd:
+  host: etcd:2379
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 10485760
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: 0.0.0.0:5432
+  data_dir: /data/postgres
+  bin_dir: /usr/lib/postgresql/14/bin
+  authentication:
+    replication:
+      username: replicator
+      password: mypassword
+    superuser:
+      username: postgres
+      password: mypassword
+  parameters:
+    max_connections: 100
+    shared_buffers: 256MB
+    max_wal_size: 1GB
+    min_wal_size: 80MB

@@ -1,0 +1,13 @@
+# Ignore database data
+data/
+
+# Ignore logs
+*.log
+
+# Ignore Docker-related files
+*.pid
+*.sock
+
+# Ignore editor/OS-specific files
+.DS_Store
+.vscode/

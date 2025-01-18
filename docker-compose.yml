@@ -1,0 +1,54 @@
+version: "3.8"
+services:
+  postgres-primary:
+    image: postgres:14
+    container_name: postgres-primary
+    environment:
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - ./data/primary:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres-net
+
+  postgres-replica:
+    image: postgres:14
+    container_name: postgres-replica
+    environment:
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - ./data/replica:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+    networks:
+      - postgres-net
+    depends_on:
+      - postgres-primary
+  
+  patroni:
+    image: quantlane/patroni:1.5.6
+    container_name: patroni
+    environment:
+      PATRONI_KUBERNETES_LABEL: "postgres"
+      PATRONI_ETCD_HOSTS: "etcd:2379"
+      PATRONI_POSTGRESQL_PORT: 5432
+    volumes:
+      - ./patroni-config:/config
+    ports:
+      - "9001:8008"
+    networks:
+      - postgres-net
+    depends_on:
+      - postgres-primary
+      - postgres-replica
+
+networks:
+  postgres-net:
+    driver: bridge
